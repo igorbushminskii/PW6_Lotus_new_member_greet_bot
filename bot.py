@@ -45,7 +45,7 @@ async def welcome_new_members(message: Message):
         await bot.send_message(
             chat_id=message.chat.id,
             message_thread_id=message.message_thread_id,  # Важно для форумов
-            text=f"Привет, {mention}! Добро пожаловать в группу гильдии Lotus.\nВ чате ник/класс/имя (https://t.me/PW6_Lotus/7) укажите, пожалуйста:\n1.Ваш Ник\n2. Класс\n3. БМ\n4. Предыдущую гильдию и причину ухода."
+            text=f"Привет, {mention}! Добро пожаловать в группу гильдии Lotus.\nВ чате ник/класс/имя (https://t.me/PW6_Lotus/7) укажите, пожалуйста:\n1. Ваш Ник\n2. Класс\n3. БМ\n4. Предыдущую гильдию и причину ухода."
         )
 
 # Обработка обычных сообщений (в темах тоже)
@@ -60,6 +60,7 @@ async def echo(message: Message):
     # )
 
 async def main():
+    asyncio.create_task(fake_web_server())  # запускаем псевдосервер
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
