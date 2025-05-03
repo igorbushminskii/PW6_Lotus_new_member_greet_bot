@@ -5,6 +5,7 @@ from aiogram.filters import CommandStart
 from aiogram.enums import ChatType
 from aiogram import F
 import asyncio
+import socket
 
 
 # Вставь свой токен
@@ -14,6 +15,17 @@ if not TOKEN:
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
+
+
+# Заглушка: слушаем порт, чтобы Render не ругался
+async def fake_web_server():
+    port = int(os.getenv("PORT", 10000))  # Render прокидывает PORT
+    server = socket.socket()
+    server.bind(("0.0.0.0", port))
+    server.listen(1)
+    print(f"Fake HTTP server listening on port {port}")
+    while True:
+        await asyncio.sleep(3600)  # просто "живём"
 
 
 # Ответ на /start
