@@ -61,6 +61,7 @@ async def echo(message: Message):
 
 async def main():
     asyncio.create_task(fake_web_server())  # запускаем псевдосервер
+    await bot.delete_webhook(drop_pending_updates=True)  # <--- ВАЖНО
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
