@@ -1,14 +1,13 @@
 import os
 from aiogram import Bot, Dispatcher
-from aiogram.types import ChatMemberAdministrator, ChatMemberOwner, Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from aiogram.types import ChatMemberAdministrator, ChatMemberOwner, Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, InlineQuery, InlineQueryResultArticle, InputTextMessageContent
 from aiogram.enums import ParseMode
 from aiogram.filters import Command, CommandStart
 from aiogram import F
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
-
+from uuid import uuid4
 import asyncio
-import aiosqlite
 
 # === Конфигурация ===
 # Токен тг бота
@@ -17,7 +16,7 @@ TOKEN = ''
 if not TOKEN:
     raise RuntimeError("Переменная окружения BOT_TOKEN не задана!")
 
-BOT_USERNAME = "PW6_Lotus_new_member_greet_bot"
+BOT_USERNAME = "PW6_Lotus_new_member_greet1_bot"
 
 HERO_CLASSES_DICT =  {
     "Мечник": "class_blade",
@@ -36,6 +35,12 @@ CALLBACK_TO_LABEL = {v: k for k, v in HERO_CLASSES_DICT.items()}
 # Файл базы данных
 DB_FILE = "onboarding.db"
 
+PLAYERS_DB = {
+    "shadowwalker": {"nickname": "ShadowWalker", "class": "Маг", "bm": "150000"},
+    "bladeking": {"nickname": "BladeKing", "class": "Мечник", "bm": "142000"},
+    "lightarcher": {"nickname": "LightArcher", "class": "Лучник", "bm": "135500"},
+}
+
 # === FSM (машина состояний) ===
 class Onboarding(StatesGroup):
     nickname = State()  # Шаг 1: Никнейм
@@ -48,15 +53,15 @@ bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
 # === Создание таблицы в SQLite ===
-async def init_db():
-    async with aiosqlite.connect(DB_FILE) as db:
-        await db.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                user_id INTEGER PRIMARY KEY,
-                nickname TEXT
-            );
-        """)
-        await db.commit()
+# async def init_db():
+#     async with aiosqlite.connect(DB_FILE) as db:
+#         await db.execute("""
+#             CREATE TABLE IF NOT EXISTS users (
+#                 user_id INTEGER PRIMARY KEY,
+#                 nickname TEXT
+#             );
+#         """)
+#         await db.commit()
 
 # === Вспомогательные методы ===
 def build_class_keyboard() -> InlineKeyboardMarkup:
@@ -196,14 +201,34 @@ async def set_user_info(message: Message):
     except Exception as e:
         await message.reply(f"Ошибка: {e}")
 
+@dp.inline_query()
+async def inline_query_handler(inline_query: InlineQuery):
+    query = inline_query.query.strip().lower()
+    results = []
 
+    for key, player in PLAYERS_DB.items():
+        if query in key:
+            results.append(
+                InlineQueryResultArticle(
+                    id=str(uuid4()),
+                    title=player["nickname"],
+                    description=f'{player["class"]}, БМ: {player["bm"]}',
+                    input_message_content=InputTextMessageContent(
+                        message_text=(
+                            f"📋 <b>{player['nickname']}</b>\n"
+                            f"🎯 Класс: {player['class']}\n"
+                            f"⚔️ БМ: {player['bm']}"
+                        ),
+                        parse_mode=ParseMode.HTML
+                    )
+                )
+            )
 
-async def main():
-    await init_db()
-    await dp.start_polling(bot)
+    await inline_query.answer(results, cache_time=1)
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(dp.start_polling(bot))
 
 
 
