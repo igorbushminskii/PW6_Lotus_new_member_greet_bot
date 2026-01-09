@@ -1,6 +1,6 @@
 # Python Bot Project
 
-This is a Python-based bot project with the necessary dependencies and configuration.
+This is a Telegram channel bot for the game Perfect World Ascend with the necessary dependencies and configuration.
 
 ## Project Structure
 - `bot.py` - Main bot application file
